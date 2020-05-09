@@ -33,12 +33,9 @@ function getIP() : string
  */
 function randString($length, $chars = 'abcdefghijklmnopqrstuvwxyz123456789') : string
 {
-    $string = time();
-    $length -= strlen($string);
-    for (; $length >= 1; $length--) {
-        $position1 = mt_rand() % strlen($chars);
-        $position2 = mt_rand() % strlen($string);
-        $string = substr_replace($string, substr($chars, $position1, 1), $position2, 0);
+    $string = '';
+    for ($i = 0; $i < $length; $i++) {
+        $string .= $chars[mt_rand(0, strlen($chars))];
     }
     return $string;
 }
