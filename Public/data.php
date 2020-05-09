@@ -35,7 +35,7 @@ function randString($length, $chars = 'abcdefghijklmnopqrstuvwxyz123456789') : s
 {
     $string = '';
     for ($i = 0; $i < $length; $i++) {
-        $string .= $chars[mt_rand(0, strlen($chars))];
+        $string .= $chars[mt_rand(0, strlen($chars) - 1)];
     }
     return $string;
 }
