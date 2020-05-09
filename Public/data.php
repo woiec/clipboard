@@ -93,9 +93,9 @@ function putFileContent(string $file, array $data) : bool
 /**
  * 读取Cookie
  * @param string $name
- * @return string
+ * @return string|array
  */
-function getCookieValue(string $name = '') : string
+function getCookieValue(string $name = '')
 {
     $values = $_COOKIE['auth'] ?? '';
     if ('' === $values) {
