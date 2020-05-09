@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Clipboard</title>
+    <style type="text/css">
+        html, body, div, span, p, pre {margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent;}
+        a {margin: 0; padding: 0; vertical-align: baseline; -webkit-tap-highlight-color:rgba(0,0,0,0); background: transparent; font-size: 14px; color: #000;}
+        a:focus, input, textarea {outline: none;}
+        a:link, a:visited, a:active {text-decoration: none; color: #000;}
+        a:hover {text-decoration: none; color: #f00;}
+        p {line-height: 26px;}
+        body {margin: 0; padding: 0; background-color: #fff; font-size: 14px; color: #000; font-family: "Microsoft Yahei", "SimHei"; line-height: 26px;}
+        div, span, p, pre {width: 100%; height: auto; float: left;}
+        ::selection {background:#ff5722; color:#fff;}
+        #tip {width: auto; max-width: 315px; height: auto; line-height: 22px; border-radius: 1px; margin: 18px 20px; padding: 20px 25px; background: #4d6a77; color: #fff; display: none;}
+        #tip span.name {font-weight: bold; margin-bottom: 10px;}
+        #tip span.txt {}
+        #tip span.onclick {width: auto; margin-top: 20px; text-decoration: underline; display: none;}
+        #tip::selection, #tip span::selection {background:#37474f; color:#fff;}
+        #log {width: calc(100% - 50px); padding: 20px 25px 30px 25px; color: #FF5722; font-weight: bold; display: none;}
+        #log a {color: #FF5722; text-decoration: underline;}
+        #clipboard {width: calc(100% - 50px); padding: 20px 25px 30px 25px; display: none;}
+        #clipboard div {margin: 0; padding: 0;}
+        #clipboard div.header {height: 36px; margin-bottom: 8px; overflow: hidden;}
+        #clipboard div.header span.text {width: auto; height: 36px; float: left; margin-right: 5px; line-height: 45px; font-size: 11px; color: #9E9E9E;}
+        #clipboard div.header span.time {width: auto; height: 36px; line-height: 36px; float: left; margin-right: 15px; font-size: 22px; font-weight: bold;}
+        #clipboard div.header a {width: auto; float: left; user-select: none; height: 15px; line-height: 16px; padding: 1px 5px; margin-top: 11px; font-size: 11px; background: #FF9800; color: #fff; border-radius: 10px;}
+        #clipboard div.header a:hover {background-color: #ff5722;}
+        #copy_tip {width: auto; height: 30px; line-height: 30px; margin: 3px 0 3px 15px; background-color: #C8E6C9; color: #297b2d; padding: 0 15px; font-size: 12px; box-shadow: 0 0 3px #c0dbc1; border-radius: 3px; opacity: 0;}
+        #copy_tip:before {content: ''; border-width: 6px; border-style: solid; position: absolute; border-color: transparent #c8e6c9 transparent transparent; margin-left: -27px; margin-top: 10px;}
+        #update_content {width: auto; height: auto; display: none; padding: 2px 10px; background: #fb8c00; color: #fff; border-radius: 5px; float: right; margin: 3px 0; user-select: none;}
+        #clipboard div.content {padding: 13px 0 40px 0; border-top: 1px solid #eee; overflow: hidden; word-wrap: break-word; word-break: normal;}
+        #clipboard div.content img {max-width: 100%;}
+        #clipboard div.content pre {white-space: pre-wrap; word-wrap: break-word; font-family: "Microsoft Yahei", "SimHei";}
+        #footer {position: fixed; bottom: 0; background: #fff; text-align: right; padding: 10px 25px; width: calc(100% - 50px); height: auto; min-height: 22px; color: #a3abaf; font-size: 12px; border-top: 1px solid #f1f0f0; box-shadow: 2px 2px 10px #dedddd;}
+        #footer p, #footer p.update span {width: auto; height: auto; min-height: 22px; line-height: 22px; float: left;}
+        #footer p.update {float: left; display: none;}
+        #footer p.update span {}
+        #footer p.update span.lock {margin-right: 10px; width: 20px; text-align: center;}
+        #footer p.update span.lock a {font-size: 12px; display: block;}
+        #footer p.update span.date {margin-right: 20px;}
+        #footer p.update span.txt {margin-right: 20px;}
+        #footer p.update span.report {}
+        #footer p.update span.report a {font-size: 11px; display: block; color: #FF9800; border: 1px solid #FFECB3; border-radius: 20px; padding: 0 9px; height: 18px; line-height: 18px; margin: 1px 0; background-color: #FFFDE7; overflow: hidden;}
+        #footer p.update span.report a:hover {background-color: #FFCC80; color: #fff; border: 1px solid #ffca2d;}
+        #footer p.update span.report a.disabled, #footer p.update span.report a.disabled:hover {color: #d3d3d3; border: 1px solid #ebebeb; background-color: #f3f3f3;}
+        #lock_tip {width: auto; height: auto; line-height: 22px; opacity: 0; padding: 5px 12px; background: #3b4e56; color: #fff; border-radius: 5px; margin: -38px 0 0 -13px;}
+        #lock_tip:before {content: ''; border-width: 6px; border-style: solid; position: absolute; border-color: #3b4e56 transparent transparent transparent; margin-left: 2px; margin-top: 27px;}
+        #footer p.copyright {float: right;}
+        #footer p.copyright a {color: #a3abaf; font-size: 12px;}
+        #footer p.copyright a:hover {text-decoration: underline;}
+        @media screen and (max-width: 750px) {
+            #footer p {width: 100%;}
+            #footer p.copyright {float: left; text-align: left;}
+        }
+        .anim_opacity_show {animation: 0.6s anim_opacity_show 0s both;}
+        .anim_opacity_hide {animation: 0.6s anim_opacity_hide 0s both;}
+        .anim2_opacity_show {animation: 0.3s anim_opacity_show 0s both;}
+        .anim2_opacity_hide {animation: 0.3s anim_opacity_hide 0s both;}
+        @keyframes anim_opacity_show {
+            0% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+        @keyframes anim_opacity_hide {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+        #mobile_page {width: 100%; height: 100%; display: none; position: absolute; z-index: 999; background-color: #fff;}
+        #mobile_page .mobile_header {height: 48px; background-color: #4b5e67;}
+        #mobile_page .mobile_header .title {width: auto; font-weight: bold; font-size: 16px; height: 48px; line-height: 48px; text-indent: 15px; color: #fff;}
+        #mobile_page .mobile_header .button {width: auto; height: auto; margin: 9px 10px 9px 0; padding: 2px 13px; border-radius: 5px; float: right; font-size: 13px; background: #2e4550; color: #add0e2;}
+        #mobile_page .mobile_header .button_cancel {margin-right: 5px;}
+        #mobile_page .mobile_main {height: calc(100% - 48px); position: absolute; margin-top: 48px;}
+        #mobile_page .mobile_main textarea {width: calc(100% - 16px); height: calc(100% - 12px); position: absolute; resize: none; padding: 6px 8px; border: 0 none;}
+    </style>
+</head>
+<body>
+<div id="mobile_page">
+    <div class="mobile_header">
+        <p class="title">新文本内容</p>
+        <p class="button button_confirm" id="mobile_button_confirm">确认修改</p>
+        <p class="button button_cancel" id="mobile_button_cancel">取消</p>
+    </div>
+    <div class="mobile_main">
+        <textarea name="mobile_content" id="mobile_content" cols="30" rows="10"></textarea>
+    </div>
+</div>
+<textarea name="copy_content" id="copy_content" cols="30" rows="10" style="position: absolute; top: -500px; left: -500px; opacity: 0; z-index: -10;"></textarea>
+<div id="tip">
+    <span class="name">当前是新任务，没有数据或数据过期。</span>
+    <span class="txt" id="tip_txt">请将复制的内容，在此页面按快捷键（CTRL + V）进行粘贴，或拖拽文件上传。</span>
+    <span class="onclick" id="tip_onclick">单击这里更新内容</span>
+</div>
+<div id="log">正在上传中...</div>
+<div id="clipboard">
+    <div class="header" id="header">
+        <span class="text">UPDATED:</span>
+        <span id="clipboard_time" class="time">00:00:00</span>
+        <a id="clipboard_copy" class="copy_button" href="javascript:void(0);">COPY</a>
+        <p id="copy_tip" class="">复制完成</p>
+        <p id="update_content" class="update_content">更新内容</p>
+    </div>
+    <div id="clipboard_content" class="content">Loading...</div>
+</div>
+<div id="footer">
+    <p class="update" id="footer_update">
+        <span class="" id="lock_tip">当前是解锁状态，允许其他端访问操作。</span>
+        <span class="lock"><a href="javascript:void(0);" id="update_lock">🔑</a></span>
+        <span class="date" id="last_updated">最后更新时间：-</span>
+        <span class="txt">(数据有效期：1天)</span>
+        <span class="report"><a href="javascript:void(0);" id="report_button">举报</a></span>
+    </p>
+    <p class="copyright">CLIPBOARD - DEVELOPED BY <a href="https://www.woiec.com" target="_blank">@FANGSONG(WOIEC.COM)</a></p>
+</div>
+
+<script type="text/javascript">
+!function(n){"use strict";function d(n,t){var r=(65535&n)+(65535&t);return(n>>16)+(t>>16)+(r>>16)<<16|65535&r}function f(n,t,r,e,o,u){return d((c=d(d(t,n),d(e,u)))<<(f=o)|c>>>32-f,r);var c,f}function l(n,t,r,e,o,u,c){return f(t&r|~t&e,n,t,o,u,c)}function v(n,t,r,e,o,u,c){return f(t&e|r&~e,n,t,o,u,c)}function g(n,t,r,e,o,u,c){return f(t^r^e,n,t,o,u,c)}function m(n,t,r,e,o,u,c){return f(r^(t|~e),n,t,o,u,c)}function i(n,t){var r,e,o,u,c;n[t>>5]|=128<<t%32,n[14+(t+64>>>9<<4)]=t;var f=1732584193,i=-271733879,a=-1732584194,h=271733878;for(r=0;r<n.length;r+=16)f=l(e=f,o=i,u=a,c=h,n[r],7,-680876936),h=l(h,f,i,a,n[r+1],12,-389564586),a=l(a,h,f,i,n[r+2],17,606105819),i=l(i,a,h,f,n[r+3],22,-1044525330),f=l(f,i,a,h,n[r+4],7,-176418897),h=l(h,f,i,a,n[r+5],12,1200080426),a=l(a,h,f,i,n[r+6],17,-1473231341),i=l(i,a,h,f,n[r+7],22,-45705983),f=l(f,i,a,h,n[r+8],7,1770035416),h=l(h,f,i,a,n[r+9],12,-1958414417),a=l(a,h,f,i,n[r+10],17,-42063),i=l(i,a,h,f,n[r+11],22,-1990404162),f=l(f,i,a,h,n[r+12],7,1804603682),h=l(h,f,i,a,n[r+13],12,-40341101),a=l(a,h,f,i,n[r+14],17,-1502002290),f=v(f,i=l(i,a,h,f,n[r+15],22,1236535329),a,h,n[r+1],5,-165796510),h=v(h,f,i,a,n[r+6],9,-1069501632),a=v(a,h,f,i,n[r+11],14,643717713),i=v(i,a,h,f,n[r],20,-373897302),f=v(f,i,a,h,n[r+5],5,-701558691),h=v(h,f,i,a,n[r+10],9,38016083),a=v(a,h,f,i,n[r+15],14,-660478335),i=v(i,a,h,f,n[r+4],20,-405537848),f=v(f,i,a,h,n[r+9],5,568446438),h=v(h,f,i,a,n[r+14],9,-1019803690),a=v(a,h,f,i,n[r+3],14,-187363961),i=v(i,a,h,f,n[r+8],20,1163531501),f=v(f,i,a,h,n[r+13],5,-1444681467),h=v(h,f,i,a,n[r+2],9,-51403784),a=v(a,h,f,i,n[r+7],14,1735328473),f=g(f,i=v(i,a,h,f,n[r+12],20,-1926607734),a,h,n[r+5],4,-378558),h=g(h,f,i,a,n[r+8],11,-2022574463),a=g(a,h,f,i,n[r+11],16,1839030562),i=g(i,a,h,f,n[r+14],23,-35309556),f=g(f,i,a,h,n[r+1],4,-1530992060),h=g(h,f,i,a,n[r+4],11,1272893353),a=g(a,h,f,i,n[r+7],16,-155497632),i=g(i,a,h,f,n[r+10],23,-1094730640),f=g(f,i,a,h,n[r+13],4,681279174),h=g(h,f,i,a,n[r],11,-358537222),a=g(a,h,f,i,n[r+3],16,-722521979),i=g(i,a,h,f,n[r+6],23,76029189),f=g(f,i,a,h,n[r+9],4,-640364487),h=g(h,f,i,a,n[r+12],11,-421815835),a=g(a,h,f,i,n[r+15],16,530742520),f=m(f,i=g(i,a,h,f,n[r+2],23,-995338651),a,h,n[r],6,-198630844),h=m(h,f,i,a,n[r+7],10,1126891415),a=m(a,h,f,i,n[r+14],15,-1416354905),i=m(i,a,h,f,n[r+5],21,-57434055),f=m(f,i,a,h,n[r+12],6,1700485571),h=m(h,f,i,a,n[r+3],10,-1894986606),a=m(a,h,f,i,n[r+10],15,-1051523),i=m(i,a,h,f,n[r+1],21,-2054922799),f=m(f,i,a,h,n[r+8],6,1873313359),h=m(h,f,i,a,n[r+15],10,-30611744),a=m(a,h,f,i,n[r+6],15,-1560198380),i=m(i,a,h,f,n[r+13],21,1309151649),f=m(f,i,a,h,n[r+4],6,-145523070),h=m(h,f,i,a,n[r+11],10,-1120210379),a=m(a,h,f,i,n[r+2],15,718787259),i=m(i,a,h,f,n[r+9],21,-343485551),f=d(f,e),i=d(i,o),a=d(a,u),h=d(h,c);return[f,i,a,h]}function a(n){var t,r="",e=32*n.length;for(t=0;t<e;t+=8)r+=String.fromCharCode(n[t>>5]>>>t%32&255);return r}function h(n){var t,r=[];for(r[(n.length>>2)-1]=void 0,t=0;t<r.length;t+=1)r[t]=0;var e=8*n.length;for(t=0;t<e;t+=8)r[t>>5]|=(255&n.charCodeAt(t/8))<<t%32;return r}function e(n){var t,r,e="0123456789abcdef",o="";for(r=0;r<n.length;r+=1)t=n.charCodeAt(r),o+=e.charAt(t>>>4&15)+e.charAt(15&t);return o}function r(n){return unescape(encodeURIComponent(n))}function o(n){return a(i(h(t=r(n)),8*t.length));var t}function u(n,t){return function(n,t){var r,e,o=h(n),u=[],c=[];for(u[15]=c[15]=void 0,16<o.length&&(o=i(o,8*n.length)),r=0;r<16;r+=1)u[r]=909522486^o[r],c[r]=1549556828^o[r];return e=i(u.concat(h(t)),512+8*t.length),a(i(c.concat(e),640))}(r(n),r(t))}function t(n,t,r){return t?r?u(t,n):e(u(t,n)):r?o(n):e(o(n))}"function"==typeof define&&define.amd?define(function(){return t}):"object"==typeof module&&module.exports?module.exports=t:n.md5=t}(this);
+</script>
+
+<script type="text/javascript">
+
+    // 判断是否是移动设备
+    var isMobile = false;
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        isMobile = true;
+    }
+
+    // 是否有权限操作
+    var isAuth = true;
+
+    // 是否锁定状态
+    var isLock = false;
+
+    // 数据内容摘要
+    var dataContent = '';
+    var dataHash = '';
+
+    // 是否允许操作更新锁定按钮
+    var isUpdateLock = true;
+
+    // 如果刷新页面后第一次数据还在加载过程中禁止某些功能操作
+    var isAction = true;
+
+    // 页面标识：首页:home，内容页:content
+    var getTaskId = function () {
+        var url = window.location.pathname;
+        var url_array = url.split('/');
+        url_array = url_array.filter(function (s) {
+            return s && s.trim();
+        });
+        if (url_array.length === 1) {
+            var reg = new RegExp(/^[a-zA-Z0-9]{4,12}$/);
+            if (reg.test(url_array[0])) {
+                return url_array[0];
+            }
+        }
+        return '';
+    };
+    var taskId = getTaskId();
+    var page = 'home';
+    if (taskId !== '') {
+        page = 'content';
+    }
+
+    // 获取数据及刷新页面的定时器
+    var init = null;
+    var init_replace = null;
+
+    // 获取ID标签
+    var getElementId = function (id) {
+        return document.getElementById(id);
+    };
+
+    // 暂停&启用请求数据事件
+    var requestEvent = function (event) {
+        if (event) {
+            if (init) {
+                clearInterval(init);
+            }
+            if (init_replace) {
+                clearInterval(init_replace);
+            }
+            init = setInterval("getData()", 2000);
+            init_replace = setInterval("replacePage()", 5 * 60000);
+        } else {
+            clearInterval(init);
+            clearInterval(init_replace);
+        }
+    };
+
+    // 获取时间
+    var getTime = function () {
+        var now = new Date();
+        var time = now.getFullYear().toString()
+            + '-' + ((now.getMonth() + 1) < 10 ? '0' + (now.getMonth() + 1) : (now.getMonth() + 1))
+            + '-' + (now.getDate() < 10 ? '0' + now.getDate() : now.getDate())
+            + ' ' + (now.getHours() < 10 ? '0' + now.getHours() : now.getHours())
+            + ':' + (now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())
+            + ':' + (now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds());
+        return time;
+    };
+
+    // 更新锁定按钮的状态
+    var setLockButton = function () {
+        var button = getElementId('update_lock');
+        var lock_tip = getElementId('lock_tip');
+        if (isLock) {
+            getElementId('report_button').className = 'disabled';
+            button.innerText = '🔒';
+            lock_tip.innerText = '当前是锁定状态，禁止其他端访问操作。';
+        } else {
+            getElementId('report_button').className = '';
+            button.innerText = '🔑';
+            lock_tip.innerText = '当前是解锁状态，允许其他端访问操作。';
+        }
+    };
+
+    // 页面切换
+    var switchPage = function (page_name) {
+        getElementId('tip').style.display = 'none';
+        getElementId('log').style.display = 'none';
+        getElementId('footer_update').style.display = 'none';
+        if (page_name === 'home') {
+            // 首页
+            getElementId('clipboard').style.display = 'block';
+            getElementId('header').style.display = 'none';
+            getElementId('clipboard_content').style.cssText = 'border-top: 0 none; padding-top: 0;';
+        } else if (page_name === 'log') {
+            // 日志页
+            getElementId('clipboard').style.display = 'none';
+            getElementId('log').style.display = 'block';
+        } else if (page_name === 'content') {
+            // 内容页
+            getElementId('clipboard').style.display = 'block';
+            getElementId('footer_update').style.display = 'block';
+            getElementId('header').removeAttribute('style');
+            getElementId('clipboard_content').removeAttribute('style');
+        } else if (page_name === 'null') {
+            // 空页面
+            getElementId('clipboard').style.display = 'none';
+            getElementId('tip').style.display = 'block';
+        }
+    };
+
+    // 更新Html
+    var setHtml = function (type, data) {
+        // 默认是不允许复制
+        dataContent = '';
+        getElementId('clipboard_copy').style.display = 'none';
+        // 如果是字符串内容则允许复制(且非移动端)
+        if (type === 'content' && data['type'] === 'string' && !isMobile) {
+            dataContent = data['content'];
+            getElementId('clipboard_copy').style.display = 'block';
+        }
+        // 输出内容到页面
+        if (type === 'log') {
+            switchPage('log');
+            getElementId('log').innerHTML = data;
+        } else if (type === 'content') {
+            if (page === 'home') {
+                getElementId('clipboard_content').innerHTML = data['content'];
+                switchPage('home');
+            } else {
+                isLock = data['lock'];
+                isAuth = data['auth'];
+                setLockButton();
+                switchPage('content');
+                getElementId('clipboard_time').innerText = data['time'].substr(11, 8);
+                getElementId('last_updated').innerText = '最后更新时间：' + data['time'];
+                if (data['type'] === 'string') {
+                    getElementId('clipboard_content').innerHTML = '<pre></pre>';
+                    getElementId('clipboard_content').firstChild.innerText = data['content'];
+                } else if (data['type'] === 'image') {
+                    getElementId('clipboard_content').innerHTML = '<img src="' + data['content'] + '" />';
+                } else if (data['type'] === 'file') {
+                    getElementId('clipboard_content').innerHTML = '请点击下载文件：<a href="' + data['content'] + '" target="_blank" style="text-decoration: underline;">' + data['content'] + '</a>';
+                } else if (data['type'] === 'warning') {
+                    getElementId('clipboard_content').innerHTML = '<span style="color: red;"></span>';
+                    getElementId('clipboard_content').firstChild.innerText = data['content'];
+                    getElementId('report_button').className = 'disabled';
+                }
+            }
+        } else if (type === 'null') {
+            isLock = false;
+            isAuth = true;
+            setLockButton();
+            switchPage('null');
+        }
+    };
+
+    // 获取数据
+    var getData = function () {
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.open('GET', 'data.json?task_id=' + taskId + '&action=get_content', true);
+        httpRequest.send();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                isAction = true;
+                var resource = httpRequest.responseText;
+                // 整个返回的资源都是hash
+                var tmp_data_hash = md5(resource);
+                if (tmp_data_hash !== dataHash) {
+                    dataHash = tmp_data_hash;
+                    var data = JSON.parse(resource);
+                    if (data['result']) {
+                        setHtml('content', data['resource']);
+                    } else {
+                        setHtml('null', null);
+                    }
+                }
+            }
+        };
+    };
+
+    // 请求数据
+    var postData = function (type, time, content) {
+        if (isAuth === false) {
+            return;
+        }
+        requestEvent(false); // 提交数据中禁用定时请求任务
+        dataHash = '';
+        dataContent = '';
+        var type_list = {"string":"文字", "image":"图片", "file":"文件"};
+        setHtml('log', '数据类型：' + type_list[type] + '，数据正在提交中。');
+        if (type !== 'file') {
+            var httpRequest = new XMLHttpRequest();
+            httpRequest.open('POST', 'data.json?task_id=' + taskId + '&action=update_content', true);
+            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            httpRequest.send('type=' + type + '&time=' + time + '&content=' + encodeURIComponent(content));
+            httpRequest.onreadystatechange = function () {
+                if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                    var resource = JSON.parse(httpRequest.responseText);
+                    if (resource['result'] && resource['resource']['result']) {
+                        var data = {
+                            'auth': isAuth,
+                            'lock': isLock,
+                            'type': type,
+                            'time': time,
+                            'content': content
+                        };
+                        setHtml('content', data);
+                        requestEvent(true);
+                    } else {
+                        setHtml('log', '数据提交失败，请<a href="javascript:history.go(0);">重试</a>。');
+                    }
+                }
+            };
+        } else {
+            var form = new FormData();
+            form.append('type', 'file');
+            form.append('time', time);
+            form.append('file', content);
+            var httpRequest = new XMLHttpRequest();
+            httpRequest.open('post', 'data.json?task_id=' + taskId + '&action=update_content', true);
+            httpRequest.send(form);
+            httpRequest.onload = function () {
+                if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                    var resource = JSON.parse(httpRequest.responseText);
+                    if (resource['result'] && resource['resource']['result']) {
+                        uploadComplete();
+                        requestEvent(true);
+                    } else {
+                        uploadFailed();
+                    }
+                }
+            };
+            httpRequest.onerror = uploadFailed;
+            httpRequest.upload.onprogress = progressFunction;
+            httpRequest.upload.onloadstart = function () {};
+        }
+    };
+
+    // 刷新页面
+    var replacePage = function () {
+        location.reload();
+    };
+
+    // 提交字符串数据
+    var requestText = function(str, time) {
+        postData('string', time, str);
+    };
+
+    // 提交截图数据
+    var requestImage = function(blob, time) {
+        var render = new FileReader();
+        render.onload = function (evt) {
+            var base64 = evt.target.result;
+            postData('image', time, base64);
+        };
+        render.readAsDataURL(blob);
+    };
+
+    // 提交文件数据
+    var requestFile = function(file, time) {
+        postData('file', time, file);
+    };
+
+    // 文件上传完成
+    var uploadComplete = function() {
+        setHtml('log', '文件上传完成，正在生成下载链接中。');
+    };
+
+    // 文件上传失败
+    var uploadFailed = function() {
+        setHtml('log', '文件上传失败，请<a href="javascript:history.go(0);">重试</a>。');
+    };
+
+    // 文件上传中
+    var progressFunction = function() {
+        setHtml('log', '文件上传中。');
+    };
+
+    // 默认请求数据
+    getData();
+
+    // 更新锁定按钮的状态
+    setLockButton();
+
+    // 切换页面-默认首页无状态
+    switchPage('home');
+
+    // 如果是内容页则定时刷新数据
+    if (page === 'content') {
+        isAction = false;
+        requestEvent(true);
+    }
+
+    // 移动端下样式修改
+    if (isMobile) {
+        getElementId('copy_tip').style.display = 'none';
+        getElementId('copy_content').style.display = 'none';
+        getElementId('update_content').style.display = 'block';
+        getElementId('tip_txt').innerText = '当前是在移动设备端访问，只支持文本内容的修改，但支持文本、文件、图片的查看。';
+        getElementId('tip_onclick').style.display = 'block';
+    }
+
+    // 点击移动端更新内容按钮
+    var openMobileUpdateContent = function () {
+        if (isMobile === false || isAuth === false || isUpdateLock === false) {
+            return;
+        }
+        getElementId('mobile_page').style.display = 'block';
+        getElementId('mobile_content').focus();
+    };
+    getElementId('update_content').onclick = function () {
+        openMobileUpdateContent();
+    };
+    getElementId('tip_onclick').onclick = function () {
+        openMobileUpdateContent();
+    };
+
+    // 点击移动端取消按钮
+    getElementId('mobile_button_cancel').onclick = function () {
+        getElementId('mobile_page').style.display = 'none';
+    };
+
+    // 点击移动端确认修改按钮
+    var is_action = true;
+    getElementId('mobile_button_confirm').onclick = function () {
+        if (isMobile === false || isAuth === false || isUpdateLock === false || is_action === false) {
+            return;
+        }
+        is_action = false;
+        var time = getTime();
+        var str = getElementId('mobile_content').value;
+        if (str === '') {
+            is_action = true;
+            return;
+        }
+        requestText(str, time);
+        // 定时回到首页
+        getElementId('mobile_page').style.display = 'none';
+        getElementId('mobile_content').value = '';
+        is_action = true;
+    };
+
+    // 锁定按钮事件
+    getElementId('update_lock').onclick = function () {
+        if (isAuth === false || isUpdateLock === false || isAction === false) {
+            return;
+        }
+        isUpdateLock = false;
+        var lock_string = isLock ? 'false' : 'true';
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.open('POST', 'data.json?task_id=' + taskId + '&action=update_lock', true);
+        httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        httpRequest.send('lock=' + lock_string);
+        httpRequest.onreadystatechange = function () {
+            isUpdateLock = true;
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                var resource = JSON.parse(httpRequest.responseText);
+                if (resource['result'] && resource['resource']['result']) {
+                    isLock = !isLock;
+                    setLockButton();
+                } else {
+                    console.log('更新锁定内容失败。');
+                }
+            }
+        };
+    };
+
+    // 锁定按钮经过事件
+    var update_lock_tip_timeout = null;
+    getElementId('update_lock').onmouseover = function () {
+        if (update_lock_tip_timeout) {
+            clearTimeout(update_lock_tip_timeout);
+        }
+        getElementId('lock_tip').className = 'anim2_opacity_show';
+    };
+    getElementId('update_lock').onmouseout = function () {
+        if (update_lock_tip_timeout) {
+            clearTimeout(update_lock_tip_timeout);
+        }
+        getElementId('lock_tip').className = 'anim2_opacity_hide';
+        update_lock_tip_timeout = setTimeout(function () {
+            getElementId('lock_tip').className = '';
+        }, 350);
+    };
+
+    // 举报按钮
+    var is_allow_report = true;
+    getElementId('report_button').onclick = function () {
+        if (isAuth === false || getElementId('report_button').className === 'disabled' || is_allow_report === false) {
+            return;
+        }
+        is_allow_report = false;
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.open('GET', 'data.json?task_id=' + taskId + '&action=remove_content', true);
+        httpRequest.send();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+                var resource = httpRequest.responseText;
+                var data = JSON.parse(resource);
+                if (data['result'] && data['resource']['result']) {
+                    // alert('举报成功，该内容已被清空。');
+                } else {
+                    is_allow_report = true;
+                    alert('举报失败，可能是该内容是锁定或非法状态。');
+                }
+            }
+        };
+    };
+
+    // 复制事件
+    var copy_timeout = null;
+    var copy_tip_timeout = null;
+    getElementId('clipboard_copy').onclick = function () {
+        if (isMobile) {
+            return;
+        }
+        var input_element = getElementId('copy_content');
+        input_element.value = dataContent;
+        input_element.select();
+        document.execCommand("Copy");
+        // 弹出复制成功消息
+        if (copy_timeout) {
+            clearTimeout(copy_timeout);
+            clearTimeout(copy_tip_timeout);
+        }
+        getElementId('copy_tip').className = 'anim_opacity_show';
+        copy_timeout = setTimeout(function () {
+            getElementId('copy_tip').className = 'anim_opacity_hide';
+            copy_tip_timeout = setTimeout(function () {
+                getElementId('copy_tip').className = '';
+            }, 650);
+        }, 1000);
+    };
+
+    // 鼠标CTRL+V事件
+    document.addEventListener('paste', function (e) {
+        if (page !== 'content' || isMobile) {
+            return;
+        }
+        var cbd = e.clipboardData;
+        var ua = window.navigator.userAgent;
+        if (!(e.clipboardData && e.clipboardData.items)) {
+            return;
+        }
+        if(cbd.items && cbd.items.length === 2 && cbd.items[0].kind === 'string' && cbd.items[1].kind === 'file' &&
+            cbd.types && cbd.types.length === 2 && cbd.types[0] === 'text/plain' && cbd.types[1] === 'Files' &&
+            ua.match(/Macintosh/i) && Number(ua.match(/Chrome\/(\d{2})/i)[1]) < 49) {
+            return;
+        }
+        var time = getTime();
+        for(var i = 0; i < cbd.items.length; i++) {
+            var item = cbd.items[i];
+            if(item.kind === 'file') {
+                var blob = item.getAsFile();
+                if (blob.size > 0) {
+                    requestImage(blob, time);
+                }
+            } else if (item.kind === 'string' && item.type === 'text/plain') {
+                item.getAsString(function (str) {
+                    requestText(str, time);
+                })
+            }
+        }
+    }, false);
+
+    // 拖拽文件事件
+    document.addEventListener('dragenter', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }, false);
+
+    document.addEventListener('dragover', function (e) {
+        e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault();
+        e.stopPropagation();
+    }, false);
+
+    document.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }, false);
+
+    document.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (page !== 'content' || isMobile) {
+            return;
+        }
+        var df = e.dataTransfer;
+        if(df.items !== undefined) {
+            var item = df.items[0];
+            if(item.kind === 'file' && item.webkitGetAsEntry().isFile) {
+                var file = item.getAsFile();
+                var time = getTime();
+                requestFile(file, time);
+            }
+        }
+    }, false);
+
+</script>
+
+</body>
+</html>
