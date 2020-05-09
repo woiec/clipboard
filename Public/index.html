@@ -91,7 +91,7 @@
 </div>
 <textarea name="copy_content" id="copy_content" cols="30" rows="10" style="position: absolute; top: -500px; left: -500px; opacity: 0; z-index: -10;"></textarea>
 <div id="tip">
-    <span class="name">当前是新任务，没有数据或数据过期。</span>
+    <span class="name">当前是新的会话，没有数据或数据过期。</span>
     <span class="txt" id="tip_txt">请将复制的内容，在此页面按快捷键（CTRL + V）进行粘贴，或拖拽文件上传。</span>
     <span class="onclick" id="tip_onclick">单击这里更新内容</span>
 </div>
@@ -152,13 +152,15 @@
         url_array = url_array.filter(function (s) {
             return s && s.trim();
         });
-        if (url_array.length === 1) {
-            var reg = new RegExp(/^[a-zA-Z0-9]{4,12}$/);
-            if (reg.test(url_array[0])) {
-                return url_array[0];
-            }
-        }
-        return '';
+        // 是否是严格的会话ID模式
+        // if (url_array.length === 1) {
+        //     var reg = new RegExp(/^[a-zA-Z0-9]{4,12}$/);
+        //     if (reg.test(url_array[0])) {
+        //         return url_array[0];
+        //     }
+        // }
+        // return '';
+        return url_array[0];
     };
     var taskId = getTaskId();
     var page = 'home';

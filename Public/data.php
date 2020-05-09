@@ -221,15 +221,25 @@ if (isset($_GET['action']) && $_GET['action'] === 'file_download') {
     downloadFile($file_id, $file_name);
 }
 
-// 获取任务ID
+// 获取会话ID
 $task = 'e';
-if (isset($_GET['task_id']) && strlen($_GET['task_id']) >= 4 && strlen($_GET['task_id']) <= 12) {
-    if (preg_match("/^[a-zA-Z\d]+$/i", $_GET['task_id']) > 0) {
+if (isset($_GET['task_id'])) {
+    if (strlen($_GET['task_id']) >= 4 && strlen($_GET['task_id']) <= 12
+        && preg_match("/^[a-zA-Z\d]+$/i", $_GET['task_id']) > 0) {
         $task = $_GET['task_id'];
+    } else if ($_GET['task_id'] !== '') {
+        $return_data = [
+            'auth' => false,
+            'lock' => true,
+            'type' => 'warning',
+            'time' => '0000-00-00 00:00:00',
+            'content' => '⚠ 当前的会话ID不符合要求，请更换。'
+        ];
+        showJson(true, $return_data);
     }
 }
 
-// 任务ID白名单
+// 会话ID白名单
 if ($task !== 'e') {
     if (strlen($task) !== 4 || substr($task, 0, 1) !== 'u' || !is_numeric(substr($task, 1))) {
         $return_data = [
@@ -237,7 +247,7 @@ if ($task !== 'e') {
             'lock' => true,
             'type' => 'warning',
             'time' => '0000-00-00 00:00:00',
-            'content' => '⚠ 为规避风险，本工具暂不向外大规模的推广使用，仅供在白名单中的任务ID使用，谢谢理解；'
+            'content' => '⚠ 为规避风险，本工具暂不向外大规模的推广使用，仅供在白名单中的会话ID使用，谢谢理解；'
                 . "\r\n" . '　 如需要该工具，请到【Github】https://github.com/xpzfs/clipboard 下载源码；'
                 . "\r\n" . '　 感谢你的支持，本工具由@方淞(WOIEC.COM)开发。'
         ];
@@ -245,7 +255,7 @@ if ($task !== 'e') {
     }
 }
 
-// 创建任务数据文件
+// 创建会话数据文件
 $file = ROOT_PATH . '/Data/' . $task . '.json';
 if (!is_file($file)) {
     putFileContent($file, []);
@@ -314,7 +324,7 @@ if (isset($_GET['action'])) {
                     'content' => '<h2>Hello, Clipboard.</h2>'
                         . '<p style="font-weight: bold;">' . $version . '<br>一个在线剪切板的工具，支持截图、文件、文字数据。</p>'
                         . '<p style="margin-bottom: 20px; font-size: 12px;">MAX_EXECUTION_TIME：' . $max_execution_time . 's；POST_MAX_SIZE：' . $post_max_size . '；FILE_UPDATE_MAX_SIZE：' . $file_update_max_size . '</p>'
-                        . '<p>请在URL后面输入任务ID（4-12个长度的字母或数字），如：/abc123</p>'
+                        . '<p>请在URL后面输入会话ID（4-12个长度的字母或数字），如：/abc123</p>'
                         . '<p>或点击这里创建新的会话任务：<a href="' . $url . '" style="text-decoration: underline;">' . $url . '</a></p>'
                 ];
                 showJson(true, $data);
