@@ -16,7 +16,7 @@
         body {margin: 0; padding: 0; background-color: #fff; font-size: 14px; color: #000; font-family: "Microsoft Yahei", "SimHei"; line-height: 26px;}
         div, span, p, pre {width: 100%; height: auto; float: left;}
         ::selection {background:#ff5722; color:#fff;}
-        #tip {width: auto; max-width: 315px; height: auto; line-height: 22px; border-radius: 1px; margin: 18px 20px; padding: 20px 25px; background: #4d6a77; color: #fff; display: none;}
+        #tip {width: auto; max-width: 315px; height: auto; line-height: 22px; margin: 18px 20px; padding: 20px 25px; display: none; background: #fffcf3; border: 1px solid #FFF3E0; border-radius: 3px; overflow: hidden; color: #19242a;}
         #tip span.name {font-weight: bold; margin-bottom: 10px;}
         #tip span.txt {}
         #tip span.onclick {width: auto; margin-top: 20px; text-decoration: underline; display: none;}
@@ -152,15 +152,10 @@
         url_array = url_array.filter(function (s) {
             return s && s.trim();
         });
-        // 是否是严格的会话ID模式
-        // if (url_array.length === 1) {
-        //     var reg = new RegExp(/^[a-zA-Z0-9]{4,12}$/);
-        //     if (reg.test(url_array[0])) {
-        //         return url_array[0];
-        //     }
-        // }
-        // return '';
-        return url_array[0];
+        if (url_array.length === 1) {
+            return url_array[0];
+        }
+        return '';
     };
     var taskId = getTaskId();
     var page = 'home';
