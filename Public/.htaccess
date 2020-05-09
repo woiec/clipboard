@@ -4,6 +4,7 @@
     RewriteRule ^data.json$ data.php
     RewriteRule ^file-download/([0-9a-zA-Z]+)/(.*)$ data.php?action=file_download&file_id=$1&file_name=$2
     RewriteRule ^([0-9a-zA-Z]+)$ index.html
+    RewriteRule ^([0-9a-zA-Z]+)/$ $1 [R=301,L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . /error.html [L]
