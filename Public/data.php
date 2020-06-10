@@ -4,14 +4,14 @@
  * 剪切板
  * @author 方淞(fang@woiec.com)
  * @see https://www.zeroecx.com
- * @version 2.1.2 2020-05-09
+ * @version 2.1.3 2020-06-10
  */
 
 set_time_limit(30);
 error_reporting(0);
 date_default_timezone_set('PRC');
 header('Content-type:text/html;charset=utf-8');
-$version = 'V2.1.2 2020-05-09';
+$version = 'V2.1.3 2020-06-10';
 
 define('ROOT_PATH', str_replace('\\', '/', dirname(__DIR__)));
 
@@ -315,7 +315,6 @@ if (isset($_GET['action'])) {
         // 读取内容
         case 'get_content':
             if ('e' === $task) {
-                $url = '/' . randString(4);
                 $max_execution_time = ini_get('max_execution_time');
                 $file_update_max_size = ini_get('upload_max_filesize');
                 $post_max_size = ini_get('post_max_size');
@@ -325,7 +324,7 @@ if (isset($_GET['action'])) {
                         . '<p style="font-weight: bold;">' . $version . '<br>一个在线剪切板的工具，支持截图、文件、文字数据。</p>'
                         . '<p style="margin-bottom: 20px; font-size: 12px;">MAX_EXECUTION_TIME：' . $max_execution_time . 's；POST_MAX_SIZE：' . $post_max_size . '；FILE_UPDATE_MAX_SIZE：' . $file_update_max_size . '</p>'
                         . '<p>请在URL后面输入会话ID（4-12个长度的字母或数字），如：/abc123</p>'
-                        . '<p>或点击这里创建新的会话任务：<a href="' . $url . '" style="text-decoration: underline;">' . $url . '</a></p>'
+                        . '<p>或点击这里创建新的会话任务：<span style="text-decoration: underline; width: auto; float: none;">/</span><span id="input_task_id" style="text-decoration: underline; width: auto; float: none;" contenteditable="true" onkeydown="return toNewTask(event);">' . randString(4) . '</span><a href="javascript:;" onclick="createNewTask();">✅</a></p>'
                 ];
                 showJson(true, $data);
             }

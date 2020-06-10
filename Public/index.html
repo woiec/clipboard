@@ -42,18 +42,18 @@
         #footer p.update span {}
         #footer p.update span.lock {margin-right: 10px; width: 20px; text-align: center;}
         #footer p.update span.lock a {font-size: 12px; display: block;}
-        #footer p.update span.date {margin-right: 20px;}
+        #footer p.update span.date {margin-right: 5px;}
         #footer p.update span.txt {margin-right: 20px;}
-        #footer p.update span.report {}
+        #footer p.update span.report {margin-right: 50px;}
         #footer p.update span.report a {font-size: 11px; display: block; color: #FF9800; border: 1px solid #FFECB3; border-radius: 20px; padding: 0 9px; height: 18px; line-height: 18px; margin: 1px 0; background-color: #FFFDE7; overflow: hidden;}
         #footer p.update span.report a:hover {background-color: #FFCC80; color: #fff; border: 1px solid #ffca2d;}
         #footer p.update span.report a.disabled, #footer p.update span.report a.disabled:hover {color: #d3d3d3; border: 1px solid #ebebeb; background-color: #f3f3f3;}
-        #lock_tip {width: auto; height: auto; line-height: 22px; opacity: 0; padding: 5px 12px; background: #3b4e56; color: #fff; border-radius: 5px; margin: -38px 0 0 -13px;}
+        #lock_tip {width: auto; height: auto; line-height: 22px; opacity: 0; padding: 5px 12px; background: #3b4e56; color: #fff; border-radius: 5px; margin: -38px 0 0 0; position: absolute; left: 13px;}
         #lock_tip:before {content: ''; border-width: 6px; border-style: solid; position: absolute; border-color: #3b4e56 transparent transparent transparent; margin-left: 2px; margin-top: 27px;}
         #footer p.copyright {float: right;}
         #footer p.copyright a {color: #a3abaf; font-size: 12px;}
         #footer p.copyright a:hover {text-decoration: underline;}
-        @media screen and (max-width: 750px) {
+        @media screen and (max-width: 835px) {
             #footer p {width: 100%;}
             #footer p.copyright {float: left; text-align: left;}
         }
@@ -308,6 +308,7 @@
                     } else {
                         setHtml('null', null);
                     }
+                    windowReize(); // 更新一下窗体大小的事件
                 }
             }
         };
@@ -409,6 +410,29 @@
     // 文件上传中
     var progressFunction = function() {
         setHtml('log', '文件上传中。');
+    };
+
+    // 跳转到新的任务
+    var createNewTask = function () {
+        var task = document.getElementById('input_task_id').innerText;
+        window.location.href = '/' + task;
+    };
+    var toNewTask = function (e) {
+        if (e.key == 'Enter') {
+            createNewTask();
+            return false;
+        }
+    };
+
+    // 窗体变化事件
+    var windowReize = function () {
+        // 内容展示区域（#clipboard_content）底部的填充距离
+        var footer_height = document.getElementById('footer').offsetHeight;
+        var clipboard_content_padding_bottom = 40;
+        if (footer_height > 43) {
+            clipboard_content_padding_bottom = footer_height - 3; // 43 + footer_height - 3
+        }
+        document.getElementById('clipboard_content').style.paddingBottom = clipboard_content_padding_bottom + 'px';
     };
 
     // 默认请求数据
@@ -631,6 +655,16 @@
             }
         }
     }, false);
+
+    // 浏览器滚动事件
+    window.onload = function() {
+        var t = window.setTimeout(function () {
+            windowReize();
+        }, 20);
+    };
+    window.onresize = function() {
+        windowReize();
+    };
 
 </script>
 
