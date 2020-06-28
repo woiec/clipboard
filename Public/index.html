@@ -182,12 +182,14 @@
             }
             if (init_replace) {
                 clearInterval(init_replace);
+                getElementId('refresh_button').style.display = 'none';
             }
             init = setInterval("getData()", 2000);
             init_replace = setInterval("replacePage()", 10 * 60000);
         } else {
             clearInterval(init);
             clearInterval(init_replace);
+            getElementId('refresh_button').style.display = 'none';
         }
     };
 
